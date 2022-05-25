@@ -1,7 +1,7 @@
 #!/bin/bash
 clear
 
-UPDATE_DATE="05142022-1"
+UPDATE_DATE="05252022-1"
 LOG_FILE="/home/ark/update$UPDATE_DATE.log"
 UPDATE_DONE="/home/ark/.config/.update$UPDATE_DATE"
 
@@ -302,16 +302,37 @@ if [ ! -f "/home/ark/.config/.update05142022" ]; then
 	touch "/home/ark/.config/.update05142022"
 fi
 
+if [ ! -f "/home/ark/.config/.update05252022" ]; then
+
+	printf "\nfix playstation typo, scripts, add n64hacks and capcom\n" | tee -a "$LOG_FILE"
+	sudo wget --no-check-certificate https://github.com/K-tec-UK/arkos/raw/k-tec/05252022/arkosupdate05252022.zip -O /home/ark/arkosupdate05252022.zip -a "$LOG_FILE" || rm -f /home/ark/arkosupdate05252022.zip | tee -a "$LOG_FILE"
+	if [ -f "/home/ark/arkosupdate05252022.zip" ]; then
+		sudo unzip -X -o /home/ark/arkosupdate05252022.zip -d / | tee -a "$LOG_FILE"
+		sudo rm -v /home/ark/arkosupdate05252022.zip | tee -a "$LOG_FILE"
+	else
+		printf "\nThe update couldn't complete because the package did not download correctly.\nPlease retry the update again." | tee -a "$LOG_FILE"
+		sleep 3
+		echo $c_brightness > /sys/devices/platform/backlight/backlight/backlight/brightness
+		exit 1
+	fi
+	printf "\nEnsure 64bit and 32bit sdl2 is still properly linked\n" | tee -a "$LOG_FILE"
+	sudo ln -sfv /usr/lib/aarch64-linux-gnu/libSDL2-2.0.so.0.14.1 /usr/lib/aarch64-linux-gnu/libSDL2-2.0.so.0 | tee -a "$LOG_FILE"
+	sudo ln -sfv /usr/lib/arm-linux-gnueabihf/libSDL2-2.0.so.0.10.0 /usr/lib/arm-linux-gnueabihf/libSDL2-2.0.so.0 | tee -a "$LOG_FILE"
+
+	printf "\nUpdate boot text to mention wuMMLe and K-tec contributions \n" | tee -a "$LOG_FILE"
+	sudo sed -i "/title\=/c\title\=ArkOS 351P/M wummle/K-tec fork" /usr/share/plymouth/themes/text.plymouth
+
+	touch "/home/ark/.config/.update05252022"
+fi
+
 if [ ! -f "$UPDATE_DONE" ]; then
-
-
 
 	printf "\nEnsure 64bit and 32bit sdl2 is still properly linked\n" | tee -a "$LOG_FILE"
 	sudo ln -sfv /usr/lib/aarch64-linux-gnu/libSDL2-2.0.so.0.14.1 /usr/lib/aarch64-linux-gnu/libSDL2-2.0.so.0 | tee -a "$LOG_FILE"
 	sudo ln -sfv /usr/lib/arm-linux-gnueabihf/libSDL2-2.0.so.0.10.0 /usr/lib/arm-linux-gnueabihf/libSDL2-2.0.so.0 | tee -a "$LOG_FILE"
 
-	printf "\nUpdate boot text to reflect final current version of ArkOS for the 351 P/M \n" | tee -a "$LOG_FILE"
-	sudo sed -i "/title\=/c\title\=ArkOS 351P/M wummle fork" /usr/share/plymouth/themes/text.plymouth
+	printf "\nUpdate boot text to mention wuMMLe and K-tec contributions \n" | tee -a "$LOG_FILE"
+	sudo sed -i "/title\=/c\title\=ArkOS 351P/M wummle/K-tec fork" /usr/share/plymouth/themes/text.plymouth
 
 	touch "$UPDATE_DONE"
 	rm -v -- "$0" | tee -a "$LOG_FILE"
